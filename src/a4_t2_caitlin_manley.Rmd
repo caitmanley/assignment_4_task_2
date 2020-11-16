@@ -1,0 +1,117 @@
+---
+title: "assignment_4_task_2"
+author: "Caitlin Manley"
+date: "11/13/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE, warning = FALSE, message = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(here)
+library(lubridate)
+library(viridis)
+library(dplyr)
+```
+
+```{r, warning = FALSE, message = FALSE, echo = FALSE}
+bonanza_hares <- read_csv(here("DATA", "bonanza_hares.csv"))
+```
+
+# A) Introduction to Assignment 4, Task 2:
+Introduction: A 4 - 5 sentence "mini-introduction" to what this study is exploring, including basic background information about the subject, site and study (with citations as needed), and a brief overview of what is included in the exploratory report. You should probably do this last.
+
+# B) Data and Analyses:
+A 3 - 4 sentence section in which you briefly describe the data, including citation & credit as needed, and provide an overview of the main analysis, statistical methods and tools used.
+
+# C) Exploratory Findings:
+
+### i) Annual juvenile hare trap counts
+Here I found the total number of juvenile snowshoe hare trappings during each year of the study (including all grid sites).
+
+```{r, warning = FALSE, message = FALSE, echo = FALSE}
+juvenile_hares <- bonanza_hares %>% 
+  filter(age == "j") %>% 
+  mutate(date_new = mdy(date)) %>% 
+  mutate(year_new = year(date_new)) %>% 
+  select(trap, age, year_new) %>% 
+  count(year_new)
+
+ggplot(data = juvenile_hares) +
+  geom_col(aes(x = year_new, y = n),
+           color = "coral4",
+           fill = "coral2") +
+  labs(x = NULL, y = "Number of Trappings", title = "Annual Juvenile Snowshoe Hare Trappings") +
+  theme_minimal() +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 11)) +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 9))
+  
+```
+**Figure 1.** The annual counts of juvenile Snowshoe hare trappings during the every year of the study at every grid site. 
+
+```{r, warning = FALSE, message = FALSE, echo = FALSE, include = FALSE}
+juveniles_summary <- juvenile_hares %>% 
+  summarize(mean = mean(n),
+            median = median(n))
+
+juveniles_summary
+```
+
+#### Major Takeaways:
+The first year of the study (1999) had the highest number of hare trappings with 126 hares trapped. The year with the lowest number of hare trappings was 2010 with only 2 hares having been trapped. The mean number of trappings is **31.5** and the median number of trappings is **18.5**. Overall, the annual trapping counts seem to decrease gradually from the beginning of the study to the end. To standardize juvenile hare population analysis in the future, I would suggest choosing a set number of days to analyze throughout each year, therefore eliminating any chance of skewing the data.
+
+### ii) Visualization of juvenile hare weights
+Here I compared the weights of juvenile Snowshoe hare by sex and grid site.
+
+```{r, warning = FALSE, message = FALSE, echo = FALSE}
+hare_weights <- bonanza_hares %>% 
+  mutate(new_sex = case_when(
+    sex == "f" ~ "Female",
+    sex == "m" ~ "Male",
+    sex == "NA" ~ "N.A."
+  )
+  ) %>% 
+  filter (age == "j") %>% 
+  select (new_sex, age, weight, grid)
+```
+
+```{r, warning = FALSE, message = FALSE, echo = FALSE}
+hare_weights %>%   
+ggplot(aes(x = new_sex, y = weight, fill = grid)) +
+  geom_boxplot() +
+  scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+  facet_wrap(~grid) +
+  labs(x = "Sex", y = "Weight (g)", title = "Juvenile Snowshoe Hare Weights") +
+  theme_light() +
+  theme(legend.position="none")
+  
+```
+**Figure 2.** Boxplot of the weights of male and female juvenile Snowshoe Hares trapped at three separate grid sites: bonbs (lowland black spruce stand), bonmat (Bonanza Mature), and bonrip (Bonanza Riparian). "NA" accounts for any individual that was not sexed at the time of the study.
+
+#### Major Takeaways:
+The median weights for both male and female juvenile hares were highest at the "Bonbs" grid site, where every trapped individual's sex was accounted for. At the Bonanza Mature and Bonanza Riparian sites there were some hares that were not sexed, therefore representing the "NA" values. The Bonanza Riparian site has the greatest sample distribution, with the highest recorded weight of **1650 grams** and the lowest recorded weight of **160 grams**.
+
+### iii) Weight comparision of juvenile hares
+Here I compared the mean weights of juvenile male and female snowshoe hares using Cohen's D and a two-sample t-test.
+
+```{r}
+summary_juveniles <- bonanza_hares %>% 
+  filter(age == "j") %>%
+  select(age, sex, weight) %>% 
+  group_by(sex) %>% 
+  summarize(mean = mean(weight),
+            sd = sd(weight),
+            median = median(weight),
+            n = n())
+```
+
+
+
+
+
+
+
+
+
+
+
